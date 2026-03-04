@@ -6,6 +6,7 @@ import type { Difficulty } from '../domain/sudoku/types'
 
 interface BestGamesState {
   records: CompletedGameRecord[]
+  recentRecordId: string | null
   setRecords: (records: CompletedGameRecord[]) => void
   loadRecords: () => void
   addRecord: (payload: { difficulty: Difficulty; elapsedSeconds: number; cheated: boolean }) => void
@@ -14,6 +15,7 @@ interface BestGamesState {
 
 export const useBestGamesStore = create<BestGamesState>((set) => ({
   records: [],
+  recentRecordId: null,
   setRecords: (records) => {
     const sorted = [...records]
       .sort((left, right) => left.elapsedSeconds - right.elapsedSeconds)
@@ -24,11 +26,11 @@ export const useBestGamesStore = create<BestGamesState>((set) => ({
       records: sorted,
     })
 
-    set({ records: sorted })
+    set({ records: sorted, recentRecordId: null })
   },
   loadRecords: () => {
     const bestGames = loadBestGames()
-    set({ records: bestGames?.records ?? [] })
+    set({ records: bestGames?.records ?? [], recentRecordId: null })
   },
   addRecord: ({ difficulty, elapsedSeconds, cheated }) =>
     set((state) => {
@@ -49,10 +51,10 @@ export const useBestGamesStore = create<BestGamesState>((set) => ({
         records,
       })
 
-      return { records }
+      return { records, recentRecordId: nextRecord.id }
     }),
   clearRecords: () => {
     clearBestGames()
-    set({ records: [] })
+    set({ records: [], recentRecordId: null })
   },
 }))

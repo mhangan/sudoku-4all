@@ -10,6 +10,7 @@ export interface InProgressGame {
   solution: SudokuGrid
   answers: SudokuGrid
   annotations: number[][]
+  hintLocked: boolean[]
   difficulty: Difficulty
   startedAt: string
   elapsedSeconds: number

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { type Difficulty, type InProgressGame } from '../../domain/sudoku/types'
 import { clearCurrentGame, loadCurrentGame, saveCurrentGame } from '../../persistence/storage'
 import { useBestGamesStore } from '../../state/useBestGamesStore'
@@ -39,6 +40,7 @@ function isPeerCell(selectedIndex: number, candidateIndex: number): boolean {
 }
 
 export function GamePage() {
+  const navigate = useNavigate()
   const [pendingResumeGame, setPendingResumeGame] = useState<InProgressGame | null>(null)
   const [isGenerating, setIsGenerating] = useState(false)
   const [isValidating, setIsValidating] = useState(false)
@@ -175,6 +177,9 @@ export function GamePage() {
   const onValidate = async (): Promise<void> => {
     if (!session || isValidating) return
 
+    const confirmed = window.confirm('Validation marks this game as cheated. Continue?')
+    if (!confirmed) return
+
     setIsValidating(true)
     try {
       const errors = await validateAnswersInWorker(session.answers, session.solution)
@@ -186,9 +191,29 @@ export function GamePage() {
     }
   }
 
+  const onHint = (): void => {
+    if (!session || isCompleted) return
+
+    if (selectedCell === null) {
+      window.alert('Please select a cell first.')
+      return
+    }
+
+    if (session.answers[selectedCell] === session.solution[selectedCell]) {
+      window.alert('This cell is already correctly filled.')
+      return
+    }
+
+    const confirmed = window.confirm('Using a hint marks this game as cheated. Continue?')
+    if (!confirmed) return
+
+    applyHint()
+  }
+
   const onCellClick = (cellIndex: number): void => {
+    if (isCompleted) return
     setSelectedCell(cellIndex)
-    if (isCompleted || inputMode !== 'number-first' || heldDigit === null) return
+    if (inputMode !== 'number-first' || heldDigit === null) return
     applyDigit(heldDigit, cellIndex)
   }
 
@@ -219,6 +244,10 @@ export function GamePage() {
     clearSession()
   }
 
+  const onViewBestGames = (): void => {
+    navigate('/best-games')
+  }
+
   return (
     <section className="space-y-4">
       {pendingResumeGame && !session && (
@@ -246,7 +275,7 @@ export function GamePage() {
         </div>
       )}
 
-      {!session && (
+      {!session && !pendingResumeGame && (
         <div className="rounded-lg border border-slate-300 bg-white p-4 shadow-sm">
           <h2 className="text-lg font-semibold">Choose difficulty</h2>
           <div className="mt-3 flex flex-wrap gap-2">
@@ -258,7 +287,7 @@ export function GamePage() {
                   void beginNewGame(level)
                 }}
                 disabled={isGenerating}
-                className="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium capitalize hover:bg-slate-100"
+                className="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium capitalize hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {level}
               </button>
@@ -280,16 +309,18 @@ export function GamePage() {
               <button
                 type="button"
                 onClick={() => setInputMode(inputMode === 'cell-first' ? 'number-first' : 'cell-first')}
-                className="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium"
+                disabled={isCompleted}
+                className="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium disabled:cursor-not-allowed disabled:opacity-60"
               >
                 Switch to {inputMode === 'cell-first' ? 'number-first' : 'cell-first'}
               </button>
               <button
                 type="button"
                 onClick={() => setAnnotationMode(!annotationMode)}
+                disabled={isCompleted}
                 className={`rounded-md px-3 py-2 text-sm font-medium ${
                   annotationMode ? 'bg-slate-900 text-white' : 'border border-slate-300 bg-white'
-                }`}
+                } disabled:cursor-not-allowed disabled:opacity-60`}
               >
                 Annotation {annotationMode ? 'on' : 'off'}
               </button>
@@ -298,15 +329,16 @@ export function GamePage() {
                 onClick={() => {
                   void onValidate()
                 }}
-                disabled={isValidating}
-                className="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium"
+                disabled={isValidating || isCompleted}
+                className="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {isValidating ? 'Validating…' : 'Validate'}
               </button>
               <button
                 type="button"
-                onClick={applyHint}
-                className="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium"
+                onClick={onHint}
+                disabled={isCompleted}
+                className="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium disabled:cursor-not-allowed disabled:opacity-60"
               >
                 Hint
               </button>
@@ -316,22 +348,48 @@ export function GamePage() {
                   void beginNewGame(difficulty)
                 }}
                 disabled={isGenerating}
-                className="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium"
+                className="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {isGenerating ? 'Generating…' : 'New game'}
               </button>
             </div>
             {session.cheated && <p className="mt-2 text-sm font-medium text-amber-700">Cheated session</p>}
-            {isCompleted && (
-              <p className="mt-2 text-sm font-semibold text-emerald-700">Completed in {formatElapsedTime(session.elapsedSeconds)}</p>
-            )}
           </div>
+
+          {isCompleted && (
+            <div className="rounded-lg border border-emerald-300 bg-emerald-50 p-4 shadow-sm">
+              <h3 className="text-lg font-semibold text-emerald-800">Congratulations!</h3>
+              <p className="mt-2 text-sm text-emerald-900">
+                You completed <strong className="capitalize">{session.difficulty}</strong> in{' '}
+                <strong>{formatElapsedTime(session.elapsedSeconds)}</strong> and the run is{' '}
+                <strong>{session.cheated ? 'cheated' : 'clean'}</strong>.
+              </p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    void beginNewGame(difficulty)
+                  }}
+                  className="rounded-md bg-emerald-700 px-3 py-2 text-sm font-medium text-white"
+                >
+                  Start new game
+                </button>
+                <button
+                  type="button"
+                  onClick={onViewBestGames}
+                  className="rounded-md border border-emerald-700 bg-white px-3 py-2 text-sm font-medium text-emerald-800"
+                >
+                  View best games
+                </button>
+              </div>
+            </div>
+          )}
 
           <div className="grid gap-4 lg:grid-cols-[1fr_220px]">
             <div className="aspect-square rounded-lg border border-slate-300 bg-white p-2 shadow-sm sm:p-3">
               <div className="grid h-full grid-cols-9 grid-rows-9 overflow-hidden rounded border border-slate-300">
                 {session.answers.map((value, index) => {
-                  const isGiven = session.puzzle[index] !== 0
+                  const isGiven = session.puzzle[index] !== 0 || session.hintLocked[index]
                   const isSelected = selectedCell === index
                   const isPeer = selectedCell !== null && isPeerCell(selectedCell, index)
                   const hasError = validationErrors[index]
@@ -342,6 +400,7 @@ export function GamePage() {
                       key={index}
                       type="button"
                       onClick={() => onCellClick(index)}
+                      disabled={isCompleted}
                       className={`relative flex items-center justify-center border border-slate-200 text-base sm:text-lg ${
                         (index + 1) % 3 === 0 && (index + 1) % 9 !== 0 ? 'border-r-2 border-r-slate-400' : ''
                       } ${
@@ -350,7 +409,7 @@ export function GamePage() {
                         highlightSameDigit ? 'font-semibold text-sky-900' : ''
                       } ${isGiven ? 'font-bold text-slate-900' : 'font-medium text-slate-700'} ${
                         hasError ? 'bg-rose-200 text-rose-900' : ''
-                      }`}
+                      } disabled:cursor-default`}
                     >
                       {value === 0 ? '' : value}
                       {value === 0 && session.annotations[index].length > 0 && (

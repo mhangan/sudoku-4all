@@ -10,6 +10,7 @@ const inProgressGameSchema = z.object({
   solution: z.array(z.number()).length(81),
   answers: z.array(z.number()).length(81),
   annotations: z.array(z.array(z.number())).length(81),
+  hintLocked: z.array(z.boolean()).length(81).optional(),
   difficulty: z.enum(['easy', 'medium', 'hard', 'expert']),
   startedAt: z.string(),
   elapsedSeconds: z.number(),
@@ -37,7 +38,13 @@ export function loadCurrentGame(): InProgressGame | null {
     if (!raw) return null
     const parsed = JSON.parse(raw)
     const result = inProgressGameSchema.safeParse(parsed)
-    return result.success ? (result.data as InProgressGame) : null
+    if (!result.success) return null
+
+    const data = result.data
+    return {
+      ...data,
+      hintLocked: data.hintLocked ?? Array.from({ length: 81 }, () => false),
+    } as InProgressGame
   } catch {
     return null
   }
