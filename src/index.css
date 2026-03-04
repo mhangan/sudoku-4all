@@ -17,5 +17,6 @@ body {
 }
 
 button {
-  font: inherit;
+  font-family: inherit;
+  line-height: inherit;
 }

@@ -416,7 +416,7 @@ export function GamePage() {
                       type="button"
                       onClick={() => onCellClick(index)}
                       disabled={isCompleted}
-                      className={`relative flex items-center justify-center border border-slate-200 text-base sm:text-lg ${
+                      className={`relative flex items-center justify-center border border-slate-200 text-lg sm:text-xl ${
                         (index + 1) % 3 === 0 && (index + 1) % 9 !== 0 ? 'border-r-2 border-r-slate-400' : ''
                       } ${
                         getRow(index) % 3 === 2 && index < 72 ? 'border-b-2 border-b-slate-400' : ''
