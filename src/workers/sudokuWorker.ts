@@ -1,13 +1,5 @@
 import { generatePuzzle, validateAnswers } from '../domain/sudoku/engine'
-import type { Difficulty, SudokuGrid } from '../domain/sudoku/types'
-
-type WorkerRequest =
-  | { type: 'generate'; difficulty: Difficulty }
-  | { type: 'validate'; answers: SudokuGrid; solution: SudokuGrid }
-
-type WorkerResponse =
-  | { type: 'generate:done'; payload: ReturnType<typeof generatePuzzle> }
-  | { type: 'validate:done'; payload: boolean[] }
+import type { WorkerRequest, WorkerResponse } from './messages'
 
 self.onmessage = (event: MessageEvent<WorkerRequest>) => {
   const message = event.data

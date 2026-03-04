@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { generatePuzzle, isSolved, validateAnswers } from '../domain/sudoku/engine'
+import type { GeneratedPuzzle } from '../domain/sudoku/engine'
 import type { Difficulty, InProgressGame, InputMode } from '../domain/sudoku/types'
 
 interface GameState {
@@ -17,11 +18,13 @@ interface GameState {
   setSelectedCell: (cellIndex: number | null) => void
   setHeldDigit: (digit: number | null) => void
   startNewGame: (difficulty?: Difficulty) => void
+  startNewGameFromGenerated: (generated: GeneratedPuzzle) => void
   loadSession: (session: InProgressGame) => void
   clearSession: () => void
   applyDigit: (digit: number, targetCell?: number) => void
   eraseCell: (targetCell?: number) => void
   runValidation: () => void
+  applyValidationResult: (errors: boolean[]) => void
   applyHint: () => void
   tickTimer: () => void
 }
@@ -79,6 +82,33 @@ export const useGameStore = create<GameState>((set) => ({
 
       return {
         difficulty,
+        inputMode: 'cell-first',
+        annotationMode: false,
+        selectedCell: null,
+        heldDigit: null,
+        validationErrors: Array<boolean>(81).fill(false),
+        session,
+        isCompleted: false,
+      }
+    }),
+  startNewGameFromGenerated: (generated) =>
+    set(() => {
+      const session: InProgressGame = {
+        version: '1.0.0',
+        puzzle: generated.puzzle,
+        solution: generated.solution,
+        answers: [...generated.puzzle],
+        annotations: Array.from({ length: 81 }, () => []),
+        difficulty: generated.difficulty,
+        startedAt: new Date().toISOString(),
+        elapsedSeconds: 0,
+        inputMode: 'cell-first',
+        annotationMode: false,
+        cheated: false,
+      }
+
+      return {
+        difficulty: generated.difficulty,
         inputMode: 'cell-first',
         annotationMode: false,
         selectedCell: null,
@@ -182,6 +212,17 @@ export const useGameStore = create<GameState>((set) => ({
           cheated: true,
         },
         validationErrors: validateAnswers(state.session.answers, state.session.solution),
+      }
+    }),
+  applyValidationResult: (errors) =>
+    set((state) => {
+      if (!state.session) return state
+      return {
+        session: {
+          ...state.session,
+          cheated: true,
+        },
+        validationErrors: errors,
       }
     }),
   applyHint: () =>

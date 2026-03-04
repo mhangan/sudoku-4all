@@ -4,6 +4,7 @@ import { clearCurrentGame, loadCurrentGame, saveCurrentGame } from '../../persis
 import { useBestGamesStore } from '../../state/useBestGamesStore'
 import { useGameStore } from '../../state/useGameStore'
 import { DigitPad } from '../../ui/DigitPad'
+import { generatePuzzleInWorker, validateAnswersInWorker } from '../../workers/sudokuWorkerClient'
 
 const difficulties: Difficulty[] = ['easy', 'medium', 'hard', 'expert']
 
@@ -39,6 +40,8 @@ function isPeerCell(selectedIndex: number, candidateIndex: number): boolean {
 
 export function GamePage() {
   const [pendingResumeGame, setPendingResumeGame] = useState<InProgressGame | null>(null)
+  const [isGenerating, setIsGenerating] = useState(false)
+  const [isValidating, setIsValidating] = useState(false)
   const hasRecordedCompletion = useRef(false)
 
   const session = useGameStore((state) => state.session)
@@ -54,11 +57,12 @@ export function GamePage() {
   const setSelectedCell = useGameStore((state) => state.setSelectedCell)
   const setHeldDigit = useGameStore((state) => state.setHeldDigit)
   const startNewGame = useGameStore((state) => state.startNewGame)
+  const startNewGameFromGenerated = useGameStore((state) => state.startNewGameFromGenerated)
   const loadSession = useGameStore((state) => state.loadSession)
   const clearSession = useGameStore((state) => state.clearSession)
   const applyDigit = useGameStore((state) => state.applyDigit)
   const eraseCell = useGameStore((state) => state.eraseCell)
-  const runValidation = useGameStore((state) => state.runValidation)
+  const applyValidationResult = useGameStore((state) => state.applyValidationResult)
   const applyHint = useGameStore((state) => state.applyHint)
   const tickTimer = useGameStore((state) => state.tickTimer)
 
@@ -152,9 +156,34 @@ export function GamePage() {
     return value === 0 ? null : value
   }, [selectedCell, session])
 
-  const beginNewGame = (newDifficulty: Difficulty): void => {
-    startNewGame(newDifficulty)
-    setPendingResumeGame(null)
+  const beginNewGame = async (newDifficulty: Difficulty): Promise<void> => {
+    if (isGenerating) return
+
+    setIsGenerating(true)
+    try {
+      const generated = await generatePuzzleInWorker(newDifficulty)
+      startNewGameFromGenerated(generated)
+      setPendingResumeGame(null)
+    } catch {
+      startNewGame(newDifficulty)
+      setPendingResumeGame(null)
+    } finally {
+      setIsGenerating(false)
+    }
+  }
+
+  const onValidate = async (): Promise<void> => {
+    if (!session || isValidating) return
+
+    setIsValidating(true)
+    try {
+      const errors = await validateAnswersInWorker(session.answers, session.solution)
+      applyValidationResult(errors)
+    } catch {
+      applyValidationResult([])
+    } finally {
+      setIsValidating(false)
+    }
   }
 
   const onCellClick = (cellIndex: number): void => {
@@ -225,13 +254,17 @@ export function GamePage() {
               <button
                 key={level}
                 type="button"
-                onClick={() => beginNewGame(level)}
+                onClick={() => {
+                  void beginNewGame(level)
+                }}
+                disabled={isGenerating}
                 className="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium capitalize hover:bg-slate-100"
               >
                 {level}
               </button>
             ))}
           </div>
+          {isGenerating && <p className="mt-3 text-sm text-slate-600">Generating puzzle…</p>}
         </div>
       )}
 
@@ -262,10 +295,13 @@ export function GamePage() {
               </button>
               <button
                 type="button"
-                onClick={runValidation}
+                onClick={() => {
+                  void onValidate()
+                }}
+                disabled={isValidating}
                 className="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium"
               >
-                Validate
+                {isValidating ? 'Validating…' : 'Validate'}
               </button>
               <button
                 type="button"
@@ -276,10 +312,13 @@ export function GamePage() {
               </button>
               <button
                 type="button"
-                onClick={() => beginNewGame(difficulty)}
+                onClick={() => {
+                  void beginNewGame(difficulty)
+                }}
+                disabled={isGenerating}
                 className="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium"
               >
-                New game
+                {isGenerating ? 'Generating…' : 'New game'}
               </button>
             </div>
             {session.cheated && <p className="mt-2 text-sm font-medium text-amber-700">Cheated session</p>}
