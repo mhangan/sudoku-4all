@@ -179,6 +179,29 @@ describe('GamePage integration', () => {
     expect(screen.getByText('Cheated session')).toBeInTheDocument()
   })
 
+  it('skips validate confirmation when session is already cheated', async () => {
+    const user = userEvent.setup()
+    useGameStore.getState().startNewGameFromGenerated(makeGenerated())
+    useGameStore.setState((state) => ({
+      session: state.session
+        ? {
+            ...state.session,
+            cheated: true,
+          }
+        : null,
+    }))
+
+    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(false)
+
+    renderPage()
+    await user.click(screen.getByRole('button', { name: 'Validate' }))
+
+    await waitFor(() => {
+      expect(validateAnswersInWorker).toHaveBeenCalledTimes(1)
+    })
+    expect(confirmSpy).not.toHaveBeenCalled()
+  })
+
   it('starts a new game from completion panel action', async () => {
     const user = userEvent.setup()
     useGameStore.setState({
@@ -211,5 +234,27 @@ describe('GamePage integration', () => {
     await user.click(screen.getByRole('button', { name: 'Hint' }))
 
     expect(alertSpy).toHaveBeenCalledWith('This cell is already correctly filled.')
+  })
+
+  it('skips hint confirmation when session is already cheated', async () => {
+    const user = userEvent.setup()
+    useGameStore.getState().startNewGameFromGenerated(makeGenerated())
+    useGameStore.setState((state) => ({
+      session: state.session
+        ? {
+            ...state.session,
+            cheated: true,
+          }
+        : null,
+    }))
+    useGameStore.getState().setSelectedCell(0)
+
+    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(false)
+
+    renderPage()
+    await user.click(screen.getByRole('button', { name: 'Hint' }))
+
+    expect(confirmSpy).not.toHaveBeenCalled()
+    expect(useGameStore.getState().session?.answers[0]).toBe(solved[0])
   })
 })

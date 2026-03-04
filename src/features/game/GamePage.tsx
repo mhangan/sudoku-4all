@@ -177,8 +177,10 @@ export function GamePage() {
   const onValidate = async (): Promise<void> => {
     if (!session || isValidating) return
 
-    const confirmed = window.confirm('Validation marks this game as cheated. Continue?')
-    if (!confirmed) return
+    if (!session.cheated) {
+      const confirmed = window.confirm('Validation marks this game as cheated. Continue?')
+      if (!confirmed) return
+    }
 
     setIsValidating(true)
     try {
@@ -204,8 +206,10 @@ export function GamePage() {
       return
     }
 
-    const confirmed = window.confirm('Using a hint marks this game as cheated. Continue?')
-    if (!confirmed) return
+    if (!session.cheated) {
+      const confirmed = window.confirm('Using a hint marks this game as cheated. Continue?')
+      if (!confirmed) return
+    }
 
     applyHint()
   }
