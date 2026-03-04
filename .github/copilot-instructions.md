@@ -20,6 +20,10 @@
 - Keep worker contracts in `src/workers/messages.ts` and worker/client code in `src/workers/*`.
 - Prefer small, focused components and functions over broad rewrites.
 
+## Skills index
+- Use `docs/skills/README.md` to select the correct checklist for the type of change.
+- Apply the relevant skill file guidance before implementing and validating changes.
+
 ## Coding guidelines
 - Use strict TypeScript-friendly patterns; avoid `any` unless unavoidable.
 - Do not introduce new dependencies unless there is a clear, documented need.

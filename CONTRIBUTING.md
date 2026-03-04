@@ -16,6 +16,10 @@ Thanks for contributing.
 - `src/persistence/*`: localStorage and persistence helpers
 - `src/workers/*`: worker contracts/client/worker implementation
 
+## Skills guidance
+- Use `docs/skills/README.md` to pick the right checklist for each change type.
+- Follow the mapped skill file(s) before implementing and testing.
+
 ## Change expectations
 - Keep changes focused and minimal.
 - Reuse existing patterns and utilities before adding new abstractions.

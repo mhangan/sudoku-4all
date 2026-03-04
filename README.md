@@ -99,3 +99,8 @@ Recommended CI workflow order:
 - `src/workers` - Web Worker entry points
 - `src/ui` - reusable UI components
 - `spec` - functional and technical specifications
+
+## Contributor Skills & Checklists
+
+- Use `docs/skills/README.md` to choose the right checklist for the type of change.
+- Core contributor guidance also lives in `CONTRIBUTING.md` and `.github/copilot-instructions.md`.
