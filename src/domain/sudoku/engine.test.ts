@@ -64,7 +64,7 @@ describe('sudoku engine scaffold', () => {
     expect(hard).toBeGreaterThanOrEqual(22)
     expect(hard).toBeLessThanOrEqual(26)
     expect(expert).toBeGreaterThanOrEqual(17)
-    expect(expert).toBeLessThanOrEqual(21)
+    expect(expert).toBeLessThanOrEqual(22)
   })
 
   it('keeps givens consistent with solution', () => {

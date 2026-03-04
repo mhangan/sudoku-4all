@@ -30,7 +30,14 @@ export const useBestGamesStore = create<BestGamesState>((set) => ({
   },
   loadRecords: () => {
     const bestGames = loadBestGames()
-    set({ records: bestGames?.records ?? [], recentRecordId: null })
+    const nextRecords = bestGames?.records ?? []
+    set((state) => ({
+      records: nextRecords,
+      recentRecordId:
+        state.recentRecordId && nextRecords.some((record) => record.id === state.recentRecordId)
+          ? state.recentRecordId
+          : null,
+    }))
   },
   addRecord: ({ difficulty, elapsedSeconds, cheated }) =>
     set((state) => {

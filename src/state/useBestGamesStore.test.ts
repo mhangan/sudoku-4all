@@ -55,4 +55,19 @@ describe('useBestGamesStore', () => {
     expect(useBestGamesStore.getState().records).toHaveLength(1)
     expect(useBestGamesStore.getState().records[0].difficulty).toBe('hard')
   })
+
+  it('preserves recent highlight id when loading records containing it', () => {
+    useBestGamesStore.getState().addRecord({
+      difficulty: 'easy',
+      elapsedSeconds: 64,
+      cheated: false,
+    })
+
+    const recentRecordId = useBestGamesStore.getState().recentRecordId
+    expect(recentRecordId).not.toBeNull()
+
+    useBestGamesStore.getState().loadRecords()
+
+    expect(useBestGamesStore.getState().recentRecordId).toBe(recentRecordId)
+  })
 })

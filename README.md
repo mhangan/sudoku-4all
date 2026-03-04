@@ -34,6 +34,29 @@ npm run dev
 - `npm run test` - run unit/integration tests
 - `npm run test:e2e` - run Playwright e2e tests
 
+## Test Coverage
+
+- **Domain / engine tests**
+	- Sudoku solution validity (rows, columns, boxes)
+	- Unique-solution generation
+	- Difficulty clue-range checks
+	- Validation and solved-state helpers
+- **Store tests**
+	- Input mode behavior (Cell-First / Number-First)
+	- Hint locking and edit restrictions
+	- Validation error persistence/clearing rules
+	- Timer start-after-first-change behavior
+	- Best-games sorting, capping, persistence, and recent-highlight tracking
+- **Page integration tests (React Testing Library)**
+	- `GamePage` generation flow, confirm dialogs, completion actions, and navigation
+	- `BestGamesPage` rendering, clear-confirmation flow, and newest-record highlight
+- **E2E tests (Playwright)**
+	- App boot and difficulty entry screen
+	- Resume/discard saved session flow
+	- Validate/Hint confirmation behavior
+	- Best-games clear confirmation (accept/decline)
+	- Completion panel actions (`View best games`, `Start new game`)
+
 ## Project Structure
 
 - `src/app` - app shell and routing
