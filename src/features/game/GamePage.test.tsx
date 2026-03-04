@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { GamePage } from './GamePage'
@@ -70,6 +70,23 @@ function renderPage(): void {
       </Routes>
     </MemoryRouter>
   )
+}
+
+function getDigitPadButton(digit: number): HTMLButtonElement {
+  const digitPad = screen.getByRole('heading', { name: 'Digit Pad' }).closest('aside')
+  if (!digitPad) {
+    throw new Error('Digit pad container not found')
+  }
+
+  const button = within(digitPad)
+    .getAllByRole('button')
+    .find((candidate) => candidate.textContent?.replace(/\s+/g, '').startsWith(String(digit)))
+
+  if (!button) {
+    throw new Error(`Digit button ${digit} not found`)
+  }
+
+  return button as HTMLButtonElement
 }
 
 describe('GamePage integration', () => {
@@ -256,5 +273,31 @@ describe('GamePage integration', () => {
 
     expect(confirmSpy).not.toHaveBeenCalled()
     expect(useGameStore.getState().session?.answers[0]).toBe(solved[0])
+  })
+
+  it('shows digit counters and disables a digit at 9/9 until erased', async () => {
+    const user = userEvent.setup()
+    const generated = makeGenerated()
+    generated.puzzle[1] = 0
+    useGameStore.getState().startNewGameFromGenerated(generated)
+    useGameStore.getState().setSelectedCell(0)
+
+    renderPage()
+
+    const oneButtonBefore = getDigitPadButton(1)
+    expect(within(oneButtonBefore).getByLabelText('Count 1')).toHaveTextContent('8')
+    expect(oneButtonBefore.disabled).toBe(false)
+
+    await user.click(oneButtonBefore)
+
+    const oneButtonAfterFill = getDigitPadButton(1)
+    expect(within(oneButtonAfterFill).getByLabelText('Count 1')).toHaveTextContent('9')
+    expect(oneButtonAfterFill.disabled).toBe(true)
+
+    await user.click(screen.getByRole('button', { name: 'Erase' }))
+
+    const oneButtonAfterErase = getDigitPadButton(1)
+    expect(within(oneButtonAfterErase).getByLabelText('Count 1')).toHaveTextContent('8')
+    expect(oneButtonAfterErase.disabled).toBe(false)
   })
 })

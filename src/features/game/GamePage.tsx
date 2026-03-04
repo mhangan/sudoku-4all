@@ -158,6 +158,19 @@ export function GamePage() {
     return value === 0 ? null : value
   }, [selectedCell, session])
 
+  const digitCounts = useMemo(() => {
+    const counts = Array<number>(10).fill(0)
+    if (!session) return counts
+
+    for (const value of session.answers) {
+      if (value >= 1 && value <= 9) {
+        counts[value] += 1
+      }
+    }
+
+    return counts
+  }, [session])
+
   const beginNewGame = async (newDifficulty: Difficulty): Promise<void> => {
     if (isGenerating) return
 
@@ -438,7 +451,7 @@ export function GamePage() {
                 })}
               </div>
             </div>
-            <DigitPad heldDigit={heldDigit} onDigitClick={onDigitClick} onErase={onErase} />
+            <DigitPad heldDigit={heldDigit} digitCounts={digitCounts} onDigitClick={onDigitClick} onErase={onErase} />
           </div>
         </>
       )}
