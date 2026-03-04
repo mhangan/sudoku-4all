@@ -54,11 +54,10 @@ Expected results:
 
 ## CI Status
 
-Add your pipeline badge here after CI is configured:
+[![CI](https://github.com/mhangan/sudoku-4all/actions/workflows/ci.yml/badge.svg)](https://github.com/mhangan/sudoku-4all/actions/workflows/ci.yml)
+[![Lint](https://github.com/mhangan/sudoku-4all/actions/workflows/lint.yml/badge.svg)](https://github.com/mhangan/sudoku-4all/actions/workflows/lint.yml)
 
-```markdown
-[![CI](https://img.shields.io/badge/CI-pending-lightgrey)](https://github.com/<org>/<repo>/actions)
-```
+Badge status reflects the latest runs on the `main` branch; individual pull request checks may differ.
 
 Recommended CI workflow order:
 
