@@ -34,6 +34,39 @@ npm run dev
 - `npm run test` - run unit/integration tests
 - `npm run test:e2e` - run Playwright e2e tests
 
+## Release Checklist
+
+Run these commands before publishing a release:
+
+```bash
+npm install
+npm run test
+npm run build
+npm run test:e2e -- --reporter=line
+```
+
+Expected results:
+
+- All Vitest suites pass with no failing tests.
+- Vite production build completes successfully and outputs `dist/` assets.
+- Playwright suites pass with no failed specs.
+- No unresolved TypeScript or lint errors remain.
+
+## CI Status
+
+Add your pipeline badge here after CI is configured:
+
+```markdown
+[![CI](https://img.shields.io/badge/CI-pending-lightgrey)](https://github.com/<org>/<repo>/actions)
+```
+
+Recommended CI workflow order:
+
+1. `npm ci`
+2. `npm run test`
+3. `npm run build`
+4. `npm run test:e2e -- --reporter=line`
+
 ## Test Coverage
 
 - **Domain / engine tests**

@@ -147,6 +147,23 @@ describe('GamePage integration', () => {
     expect(screen.getByText('Current Session')).toBeInTheDocument()
   })
 
+  it('discards a saved game and returns to difficulty selection', async () => {
+    const user = userEvent.setup()
+    const generated = makeGenerated()
+    const savedSession: InProgressGame = {
+      ...makeCompletedSession(),
+      answers: generated.puzzle,
+      puzzle: generated.puzzle,
+      hintLocked: Array.from({ length: 81 }, () => false),
+    }
+    localStorage.setItem(CURRENT_GAME_KEY, JSON.stringify(savedSession))
+
+    renderPage()
+
+    await user.click(await screen.findByRole('button', { name: 'Discard' }))
+    expect(screen.getByText('Choose difficulty')).toBeInTheDocument()
+  })
+
   it('runs worker validation when confirmation is accepted', async () => {
     const user = userEvent.setup()
     useGameStore.getState().startNewGameFromGenerated(makeGenerated())
@@ -182,5 +199,17 @@ describe('GamePage integration', () => {
     await waitFor(() => {
       expect(screen.queryByText('Congratulations!')).not.toBeInTheDocument()
     })
+  })
+
+  it('shows informative message when hint is requested on a correct cell', async () => {
+    const user = userEvent.setup()
+    useGameStore.getState().startNewGameFromGenerated(makeGenerated())
+    useGameStore.getState().setSelectedCell(8)
+    const alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => undefined)
+
+    renderPage()
+    await user.click(screen.getByRole('button', { name: 'Hint' }))
+
+    expect(alertSpy).toHaveBeenCalledWith('This cell is already correctly filled.')
   })
 })

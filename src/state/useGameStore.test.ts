@@ -90,4 +90,54 @@ describe('useGameStore', () => {
 
     expect(useGameStore.getState().session?.elapsedSeconds).toBe(1)
   })
+
+  it('does not change answers or annotations when switching input mode', () => {
+    useGameStore.getState().startNewGameFromGenerated(makeGenerated())
+
+    useGameStore.getState().setSelectedCell(0)
+    useGameStore.getState().applyDigit(9, 0)
+
+    useGameStore.getState().setAnnotationMode(true)
+    useGameStore.getState().setSelectedCell(1)
+    useGameStore.getState().applyDigit(2, 1)
+
+    const beforeSwitch = useGameStore.getState().session
+    expect(beforeSwitch?.answers[0]).toBe(9)
+    expect(beforeSwitch?.annotations[1]).toEqual([2])
+
+    useGameStore.getState().setInputMode('number-first')
+    useGameStore.getState().setInputMode('cell-first')
+
+    const afterSwitch = useGameStore.getState().session
+    expect(afterSwitch?.answers[0]).toBe(9)
+    expect(afterSwitch?.annotations[1]).toEqual([2])
+  })
+
+  it('erase clears all annotations in selected cell', () => {
+    useGameStore.getState().startNewGameFromGenerated(makeGenerated())
+    useGameStore.getState().setAnnotationMode(true)
+    useGameStore.getState().setSelectedCell(0)
+
+    useGameStore.getState().applyDigit(1, 0)
+    useGameStore.getState().applyDigit(2, 0)
+    expect(useGameStore.getState().session?.annotations[0]).toEqual([1, 2])
+
+    useGameStore.getState().eraseCell(0)
+    expect(useGameStore.getState().session?.annotations[0]).toEqual([])
+  })
+
+  it('removes peer candidate when a correct answer is placed', () => {
+    useGameStore.getState().startNewGameFromGenerated(makeGenerated())
+    useGameStore.getState().setAnnotationMode(true)
+
+    useGameStore.getState().setSelectedCell(1)
+    useGameStore.getState().applyDigit(1, 1)
+    expect(useGameStore.getState().session?.annotations[1]).toEqual([1])
+
+    useGameStore.getState().setAnnotationMode(false)
+    useGameStore.getState().setSelectedCell(0)
+    useGameStore.getState().applyDigit(1, 0)
+
+    expect(useGameStore.getState().session?.annotations[1]).toEqual([])
+  })
 })
