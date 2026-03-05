@@ -410,11 +410,16 @@ export function GamePage() {
                   const isSelected = selectedCell === index
                   const isPeer = selectedCell !== null && isPeerCell(selectedCell, index)
                   const hasError = validationErrors[index]
-                  const highlightSameDigit = selectedDigit !== null && value !== 0 && selectedDigit === value
+                  const highlightSameDigit =
+                    selectedDigit !== null &&
+                    index !== selectedCell &&
+                    (value === selectedDigit || session.annotations[index].includes(selectedDigit))
                   const backgroundClass = hasError
                     ? 'bg-rose-200 text-rose-900'
                     : isSelected
                       ? 'bg-sky-200'
+                      : highlightSameDigit
+                        ? 'bg-sky-200'
                       : isPeer
                         ? isGiven
                           ? 'bg-slate-200'
@@ -434,7 +439,7 @@ export function GamePage() {
                       } ${
                         getRow(index) % 3 === 2 && index < 72 ? 'border-b-2 border-b-slate-400' : ''
                       } ${backgroundClass} ${
-                        highlightSameDigit ? 'font-semibold text-sky-900' : ''
+                        highlightSameDigit && value !== 0 ? 'font-semibold text-sky-900' : ''
                       } ${isGiven ? 'font-bold text-slate-900' : 'font-medium text-slate-700'} ${
                         isSelected ? 'z-10 ring-2 ring-inset ring-slate-900' : ''
                       } disabled:cursor-default`}

@@ -320,4 +320,43 @@ describe('GamePage integration', () => {
 
     expect(firstCell.className).toContain('ring-slate-900')
   })
+
+  it('highlights same digit in other filled and annotated cells when selecting a filled cell', async () => {
+    const user = userEvent.setup()
+    const generated = makeGenerated()
+    useGameStore.getState().startNewGameFromGenerated(generated)
+
+    useGameStore.setState((state) => {
+      if (!state.session) return state
+
+      const annotations = state.session.annotations.map((notes) => [...notes])
+      annotations[0] = [9]
+
+      return {
+        ...state,
+        session: {
+          ...state.session,
+          annotations,
+        },
+      }
+    })
+
+    const { container } = render(
+      <MemoryRouter initialEntries={['/']}>
+        <Routes>
+          <Route path="/" element={<GamePage />} />
+        </Routes>
+      </MemoryRouter>
+    )
+
+    const gridButtons = container.querySelectorAll('div.grid.grid-cols-9.grid-rows-9 > button')
+    const selectedCell = gridButtons.item(8) as HTMLButtonElement
+    const matchingFilledCell = gridButtons.item(14) as HTMLButtonElement
+    const matchingAnnotatedCell = gridButtons.item(0) as HTMLButtonElement
+
+    await user.click(selectedCell)
+
+    expect(matchingFilledCell.className).toContain('bg-sky-200')
+    expect(matchingAnnotatedCell.className).toContain('bg-sky-200')
+  })
 })
