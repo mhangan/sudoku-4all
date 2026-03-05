@@ -422,8 +422,8 @@ export function GamePage() {
                         ? 'bg-sky-200'
                       : isPeer
                         ? isGiven
-                          ? 'bg-slate-200'
-                          : 'bg-sky-50'
+                          ? 'bg-amber-100'
+                          : 'bg-amber-50'
                         : isGiven
                           ? 'bg-slate-100'
                           : 'bg-white'
