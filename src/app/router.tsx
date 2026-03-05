@@ -3,13 +3,18 @@ import { AppShell } from './shell'
 import { GamePage } from '../features/game/GamePage'
 import { BestGamesPage } from '../features/best-games/BestGamesPage'
 
-export const router = createBrowserRouter([
+export const router = createBrowserRouter(
+  [
+    {
+      path: '/',
+      element: <AppShell />,
+      children: [
+        { index: true, element: <GamePage /> },
+        { path: 'best-games', element: <BestGamesPage /> },
+      ],
+    },
+  ],
   {
-    path: '/',
-    element: <AppShell />,
-    children: [
-      { index: true, element: <GamePage /> },
-      { path: 'best-games', element: <BestGamesPage /> },
-    ],
+    basename: import.meta.env.BASE_URL,
   },
-])
+)
