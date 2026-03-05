@@ -219,7 +219,7 @@ describe('GamePage integration', () => {
     expect(confirmSpy).not.toHaveBeenCalled()
   })
 
-  it('starts a new game from completion panel action', async () => {
+  it('returns to difficulty selection from completion panel new game action', async () => {
     const user = userEvent.setup()
     useGameStore.setState({
       session: makeCompletedSession(),
@@ -227,18 +227,22 @@ describe('GamePage integration', () => {
       difficulty: 'easy',
     })
 
-    vi.mocked(generatePuzzleInWorker).mockResolvedValue(makeGenerated('medium'))
-
     renderPage()
     await user.click(screen.getByRole('button', { name: 'Start new game' }))
 
-    await waitFor(() => {
-      expect(generatePuzzleInWorker).toHaveBeenCalled()
-    })
+    expect(generatePuzzleInWorker).not.toHaveBeenCalled()
+    expect(screen.getByText('Choose difficulty')).toBeInTheDocument()
+  })
 
-    await waitFor(() => {
-      expect(screen.queryByText('Congratulations!')).not.toBeInTheDocument()
-    })
+  it('returns to difficulty selection from current session new game action', async () => {
+    const user = userEvent.setup()
+    useGameStore.getState().startNewGameFromGenerated(makeGenerated())
+
+    renderPage()
+    await user.click(screen.getByRole('button', { name: 'New game' }))
+
+    expect(generatePuzzleInWorker).not.toHaveBeenCalled()
+    expect(screen.getByText('Choose difficulty')).toBeInTheDocument()
   })
 
   it('shows informative message when hint is requested on a correct cell', async () => {

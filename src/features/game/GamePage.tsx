@@ -265,6 +265,12 @@ export function GamePage() {
     navigate('/best-games')
   }
 
+  const onOpenDifficultySelection = (): void => {
+    clearCurrentGame()
+    clearSession()
+    setPendingResumeGame(null)
+  }
+
   return (
     <section className="space-y-4">
       {pendingResumeGame && !session && (
@@ -361,9 +367,7 @@ export function GamePage() {
               </button>
               <button
                 type="button"
-                onClick={() => {
-                  void beginNewGame(difficulty)
-                }}
+                onClick={onOpenDifficultySelection}
                 disabled={isGenerating}
                 className="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium disabled:cursor-not-allowed disabled:opacity-60"
               >
@@ -384,9 +388,7 @@ export function GamePage() {
               <div className="mt-3 flex flex-wrap gap-2">
                 <button
                   type="button"
-                  onClick={() => {
-                    void beginNewGame(difficulty)
-                  }}
+                  onClick={onOpenDifficultySelection}
                   className="rounded-md bg-emerald-700 px-3 py-2 text-sm font-medium text-white"
                 >
                   Start new game
