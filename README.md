@@ -34,6 +34,30 @@ npm run dev
 - `npm run test` - run unit/integration tests
 - `npm run test:e2e` - run Playwright e2e tests
 
+## Deployment (GitHub Pages)
+
+This project is configured for GitHub-native deployment using GitHub Actions and GitHub Pages.
+
+- Workflow file: `.github/workflows/deploy-pages.yml`
+- Trigger: push to `main` (or manual dispatch)
+- Build command: `npm run build`
+- Publish directory: `dist/`
+
+One-time repository setup:
+
+1. Go to `Settings -> Pages` in this repository.
+2. Under `Source`, select `GitHub Actions`.
+3. Push to `main` to trigger deployment.
+
+After a successful run, the app is published at:
+
+- `https://<github-username>.github.io/<repository-name>/`
+
+Notes:
+
+- The deploy workflow sets the Vite base path automatically using `actions/configure-pages`.
+- For custom domains, configure the domain in `Settings -> Pages`.
+
 ## Release Checklist
 
 Run these commands before publishing a release:

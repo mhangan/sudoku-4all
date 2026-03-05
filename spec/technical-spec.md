@@ -51,7 +51,7 @@ From the functional requirements, the implementation must be:
 - **E2E Tests:** Playwright
 - **Linting/Formatting:** ESLint + Prettier
 - **Offline Support (optional, recommended):** `vite-plugin-pwa` (Workbox-based service worker)
-- **Deployment Target:** Static hosting (GitHub Pages, Netlify, Vercel static output, or similar)
+- **Deployment Target:** GitHub Pages via GitHub Actions (primary)
 
 ---
 
@@ -141,10 +141,23 @@ On load:
 - Add Vitest + RTL + Playwright.
 - Add PWA plugin (optional but recommended).
 - Configure CI to run lint + unit tests + e2e smoke.
+- Configure GitHub Pages deployment workflow (`.github/workflows/deploy-pages.yml`) to build `dist/` and publish via `actions/deploy-pages`.
 
 ---
 
-## 9. Trade-offs and Alternatives
+## 9. Deployment Profile (GitHub-native)
+
+- **Source control and CI/CD:** GitHub repository + GitHub Actions.
+- **Hosting:** GitHub Pages static site.
+- **Build step:** `npm run build` with Vite base path supplied by `actions/configure-pages`.
+- **Artifact:** `dist/` uploaded with `actions/upload-pages-artifact`.
+- **Release trigger:** push to `main` (plus optional manual dispatch).
+
+This profile keeps the application fully client-side and free to host while keeping code, automation, and delivery in a single platform.
+
+---
+
+## 10. Trade-offs and Alternatives
 
 - **React + Zustand vs Redux Toolkit:** Zustand is lighter and sufficient for local app state.
 - **Tailwind vs CSS modules:** Tailwind speeds UI implementation and consistency; CSS modules remain a valid alternative.
@@ -152,6 +165,6 @@ On load:
 
 ---
 
-## 10. Final Recommendation
+## 11. Final Recommendation
 
 Adopt a **TypeScript + React + Vite + Zustand + Tailwind** stack, persist state in **`localStorage`** with **Zod-validated schemas**, and implement Sudoku generation/solving in a **Web Worker**. This combination best satisfies the functional requirements while keeping the app fully client-side, performant, and maintainable.
