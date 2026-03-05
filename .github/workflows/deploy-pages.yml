@@ -37,6 +37,11 @@ jobs:
       - name: Build
         run: npm run build -- --base "${{ steps.pages.outputs.base_path }}/"
 
+      - name: Print built index.html
+        run: |
+          echo "--- dist/index.html ---"
+          cat dist/index.html
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:

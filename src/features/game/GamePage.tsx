@@ -435,7 +435,9 @@ export function GamePage() {
                         getRow(index) % 3 === 2 && index < 72 ? 'border-b-2 border-b-slate-400' : ''
                       } ${backgroundClass} ${
                         highlightSameDigit ? 'font-semibold text-sky-900' : ''
-                      } ${isGiven ? 'font-bold text-slate-900' : 'font-medium text-slate-700'} disabled:cursor-default`}
+                      } ${isGiven ? 'font-bold text-slate-900' : 'font-medium text-slate-700'} ${
+                        isSelected ? 'z-10 ring-2 ring-inset ring-slate-900' : ''
+                      } disabled:cursor-default`}
                     >
                       {value === 0 ? '' : value}
                       {value === 0 && session.annotations[index].length > 0 && (

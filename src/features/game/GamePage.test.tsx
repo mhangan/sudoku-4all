@@ -300,4 +300,24 @@ describe('GamePage integration', () => {
     expect(within(oneButtonAfterErase).getByLabelText('Count 1')).toHaveTextContent('8')
     expect(oneButtonAfterErase.disabled).toBe(false)
   })
+
+  it('renders a dark border around the selected cell', async () => {
+    const user = userEvent.setup()
+    useGameStore.getState().startNewGameFromGenerated(makeGenerated())
+
+    const { container } = render(
+      <MemoryRouter initialEntries={['/']}>
+        <Routes>
+          <Route path="/" element={<GamePage />} />
+        </Routes>
+      </MemoryRouter>
+    )
+
+    const gridButtons = container.querySelectorAll('div.grid.grid-cols-9.grid-rows-9 > button')
+    const firstCell = gridButtons.item(0) as HTMLButtonElement
+
+    await user.click(firstCell)
+
+    expect(firstCell.className).toContain('ring-slate-900')
+  })
 })
